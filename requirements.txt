@@ -1,6 +1,39 @@
-fastapi
-uvicorn
-passlib
-sqlalchemy
-bcrypt
-python-jose
+# FastAPI and ASGI server
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+
+# Database
+sqlalchemy==2.0.25
+alembic==1.13.1
+
+# Authentication and security
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.6
+
+# Data validation
+pydantic==2.5.3
+pydantic-settings==2.1.0
+email-validator==2.1.0
+
+# Environment management
+python-dotenv==1.0.0
+
+# Logging and monitoring
+structlog==23.2.0
+
+# CLI tools
+click==8.1.7
+
+# Development and testing
+pytest==7.4.4
+pytest-asyncio==0.23.4
+httpx==0.26.0
+black==23.12.1
+isort==5.13.2
+flake8==7.0.0
+mypy==1.8.0
+
+# Additional utilities
+python-dateutil==2.8.2
+pytz==2023.3
