@@ -1,5 +1,6 @@
 """
-Authentication endpoints for user login and token management.
+Authentication API endpoints.
+Handles user login, logout, and current user information.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -9,11 +10,12 @@ import logging
 from app.core.database import get_db
 from app.core.exceptions import AuthenticationError
 from app.schemas.auth import LoginRequest, LoginResponse, Token
-from app.services.auth_service import AuthService
+from app.services.auth_service import AuthService, get_current_user_dependency
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/auth", tags=["authentication"])
+router = APIRouter()
 
 
 @router.post("/login", response_model=LoginResponse, status_code=status.HTTP_200_OK)
@@ -22,14 +24,14 @@ async def login(
     db: Session = Depends(get_db)
 ):
     """
-    Authenticate user and return access token.
+    Login endpoint for JSON-based authentication.
     
     Args:
-        login_data: User login credentials
+        login_data: Login credentials
         db: Database session
         
     Returns:
-        LoginResponse with access token and user info
+        Login response with access token and user info
         
     Raises:
         HTTPException: If authentication fails
@@ -118,7 +120,7 @@ async def logout():
 
 @router.get("/me", status_code=status.HTTP_200_OK)
 async def get_current_user_info(
-    current_user = Depends(AuthService.get_current_user_dependency)
+    current_user: User = Depends(get_current_user_dependency)
 ):
     """
     Get current authenticated user information.
