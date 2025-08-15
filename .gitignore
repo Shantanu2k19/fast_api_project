@@ -1,5 +1,4 @@
-/.vscode
-/__pycache__
+.vscode
+__pycache__
 /myenv
-/blog/__pycache__
 blog.db
