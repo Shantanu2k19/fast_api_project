@@ -4,6 +4,8 @@ from blog import schemas, database
 from fastapi import Depends, status
 from sqlalchemy.orm import Session
 from blog.repository import blog
+from blog.routers import authentication
+
 
 router = APIRouter(
     tags=['blogs'],
@@ -11,22 +13,25 @@ router = APIRouter(
 )
 
 @router.get('/fetch_all', status_code=200, response_model=List[schemas.ShowBlog])
-def get_resp_model(db:Session=Depends(database.get_db)):
+def get_resp_model(db:Session=Depends(database.get_db), current_user: schemas.User = Depends(authentication.get_current_user)):
     return blog.fetch_all_logic(db)
 
+
 @router.post('/create', status_code=status.HTTP_201_CREATED)
-def create_blog(request: schemas.Blog, db:Session=Depends(database.get_db)):
+def create_blog(request: schemas.Blog, db:Session=Depends(database.get_db), current_user: schemas.User = Depends(authentication.get_current_user)):
     return blog.create_blog_logic(db, request)
 
+
 @router.get('/fetch_with_id/{id}', status_code=status.HTTP_200_OK, response_model=schemas.ShowBlog)
-def get_blog_with_id(id:int, db:Session=Depends(database.get_db)):
+def get_blog_with_id(id:int, db:Session=Depends(database.get_db), current_user: schemas.User = Depends(authentication.get_current_user)):
     return blog.fetch_blog_with_id_logic(db, id)
 
+
 @router.delete('/delete/{id}')
-def delete_blog(id: int, db: Session=Depends(database.get_db)):
+def delete_blog(id: int, db: Session=Depends(database.get_db), current_user: schemas.User = Depends(authentication.get_current_user)):
     return blog.delete_blog_logic(db, id)
 
 
 @router.put('/update/{id}', status_code=status.HTTP_202_ACCEPTED)
-def update_blog(id:int, request_obj: schemas.Blog,db:Session=Depends(database.get_db)):
+def update_blog(id:int, request_obj: schemas.Blog,db:Session=Depends(database.get_db), current_user: schemas.User = Depends(authentication.get_current_user)):
     return blog.update_blog_logic(db, id, request_obj)
