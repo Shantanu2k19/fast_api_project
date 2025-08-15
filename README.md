@@ -19,3 +19,9 @@ python -c "import sqlalchemy; print(sqlalchemy.__version__)"
 
 
 #create db using init_dp.py, (database.py file should be made first and init in the same folder)
+
+
+
+
+TODO:
+- separate out the models for each functionality 
