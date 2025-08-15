@@ -8,7 +8,7 @@ router = APIRouter(
     prefix='/user'
 )
 
-@router.post('/create')
+@router.post('/create', response_model=schemas.ShowUser)
 def create_user(request: schemas.User, db:Session=Depends(database.get_db)):
     return user.create_user_logic(request, db)
 
