@@ -26,8 +26,7 @@ class Blog(Base):
     # Foreign keys
     creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     
-    # Relationships
-    creator = relationship("User", back_populates="blogs")
+    # Relationships will be set up in __init__.py to avoid circular imports
     
     def __repr__(self) -> str:
         return f"<Blog(id={self.id}, title='{self.title}', creator_id={self.creator_id})>"

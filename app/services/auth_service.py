@@ -5,7 +5,7 @@ Handles login, token creation, and user verification.
 from datetime import timedelta
 from typing import Optional
 from fastapi import Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 import logging
 
@@ -19,8 +19,11 @@ from app.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 
-# OAuth2 scheme for token authentication
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+# HTTP Bearer scheme for JWT token authentication
+http_bearer_scheme = HTTPBearer()
+
+# OAuth2 scheme for password-based authentication (useful for OAuth2 flows)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login-form")
 
 
 class AuthService:
@@ -97,11 +100,14 @@ class AuthService:
     
     def get_current_user(
         self, 
-        token: str = Depends(oauth2_scheme),
+        credentials = Depends(http_bearer_scheme),
         db: Session = Depends(get_db)
     ) -> User:
-        """Get current authenticated user from token."""
+        """Get current authenticated user from JWT Bearer token."""
         try:
+            # Extract token from HTTPBearer credentials
+            token = credentials.credentials
+            
             # Verify token
             email = security_manager.verify_token(token)
             if not email:
@@ -119,6 +125,27 @@ class AuthService:
             
         except Exception as e:
             logger.error(f"Current user retrieval error: {e}")
+            raise
+    
+    def get_current_user_from_oauth2(
+        self, 
+        token: str,
+        db: Session
+    ) -> User:
+        """Get current authenticated user from OAuth2 token."""
+        try:
+            # Validate OAuth2 token with provider
+            user = self.validate_oauth2_token(token)
+            if not user:
+                raise AuthenticationError("Invalid OAuth2 token")
+            
+            if not user.is_active:
+                raise AuthenticationError("User account is deactivated")
+            
+            return user
+            
+        except Exception as e:
+            logger.error(f"OAuth2 current user retrieval error: {e}")
             raise
     
     def get_current_active_user(
@@ -142,16 +169,53 @@ class AuthService:
         
         # Users can only access their own resources
         return user.id == resource_owner_id
+    
+    def validate_oauth2_token(
+        self, 
+        oauth2_token: str
+    ) -> Optional[User]:
+        """
+        Validate OAuth2 token (for future Google login integration).
+        
+        Args:
+            oauth2_token: OAuth2 access token from provider
+            
+        Returns:
+            User object if token is valid, None otherwise
+        """
+        try:
+            # TODO: Implement OAuth2 provider token validation
+            # This is where you would:
+            # 1. Validate token with Google OAuth2 API
+            # 2. Extract user information from Google
+            # 3. Find or create user in your database
+            # 4. Return user object
+            
+            logger.info("OAuth2 token validation called (not yet implemented)")
+            return None
+            
+        except Exception as e:
+            logger.error(f"OAuth2 token validation error: {e}")
+            return None
 
 
 # Dependency functions for use in routers
 async def get_current_user_dependency(
+    credentials = Depends(http_bearer_scheme),
+    db: Session = Depends(get_db)
+) -> User:
+    """Dependency function to get current user from JWT Bearer token."""
+    auth_service = AuthService(db)
+    return auth_service.get_current_user(credentials, db)
+
+
+async def get_current_user_oauth2_dependency(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> User:
-    """Dependency function to get current user."""
+    """Dependency function to get current user from OAuth2 token."""
     auth_service = AuthService(db)
-    return auth_service.get_current_user(token, db)
+    return auth_service.get_current_user_from_oauth2(token, db)
 
 
 async def get_current_active_user_dependency(

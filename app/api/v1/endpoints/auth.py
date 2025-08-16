@@ -63,28 +63,29 @@ async def login_form(
     db: Session = Depends(get_db)
 ):
     """
-    Login endpoint for OAuth2 form-based authentication.
+    OAuth2 form-based login endpoint for OAuth2 flows and future integrations.
     
     Args:
-        form_data: OAuth2 form data
+        form_data: OAuth2 form data (username=email, password=password)
         db: Database session
         
     Returns:
-        Token response
+        Token response for OAuth2 flows
         
     Raises:
         HTTPException: If authentication fails
     """
     try:
+        # Convert OAuth2 form data to our login format
         login_data = LoginRequest(
-            email=form_data.username,
+            email=form_data.username,  # OAuth2 uses 'username' field
             password=form_data.password
         )
         
         auth_service = AuthService(db)
         response = auth_service.login_user(login_data)
         
-        logger.info(f"Successful form login for user: {form_data.username}")
+        logger.info(f"Successful OAuth2 form login for user: {form_data.username}")
         return Token(
             access_token=response.access_token,
             token_type=response.token_type,
@@ -92,30 +93,100 @@ async def login_form(
         )
         
     except AuthenticationError as e:
-        logger.warning(f"Form authentication failed for {form_data.username}: {e.detail}")
+        logger.warning(f"OAuth2 form authentication failed for {form_data.username}: {e.detail}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password"
         )
     except Exception as e:
-        logger.error(f"Form login error for {form_data.username}: {e}")
+        logger.error(f"OAuth2 form login error for {form_data.username}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error during login"
+            detail="Internal server error during OAuth2 login"
         )
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
-async def logout():
+async def logout(
+    current_user: User = Depends(get_current_user_dependency)
+):
     """
-    Logout endpoint (client-side token removal).
+    Logout endpoint for authenticated users.
+    
+    Args:
+        current_user: Current authenticated user
+        
+    Returns:
+        Logout confirmation message
+    """
+    try:
+        logger.info(f"User {current_user.email} logged out successfully")
+        return {"message": "Logged out successfully"}
+        
+    except Exception as e:
+        logger.error(f"Logout error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during logout"
+        )
+
+
+@router.get("/google/login")
+async def google_login():
+    """
+    Initiate Google OAuth2 login flow.
     
     Returns:
-        Success message
+        Google OAuth2 authorization URL
     """
-    # Note: JWT tokens are stateless, so logout is handled client-side
-    # by removing the token from storage
-    return {"message": "Successfully logged out"}
+    try:
+        # TODO: Implement Google OAuth2 flow
+        # This would redirect to Google's OAuth2 authorization page
+        logger.info("Google OAuth2 login initiated (not yet implemented)")
+        return {
+            "message": "Google OAuth2 login not yet implemented",
+            "status": "development"
+        }
+        
+    except Exception as e:
+        logger.error(f"Google login error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during Google login"
+        )
+
+
+@router.get("/google/callback")
+async def google_callback(code: str):
+    """
+    Handle Google OAuth2 callback.
+    
+    Args:
+        code: Authorization code from Google
+        
+    Returns:
+        Login response with access token
+    """
+    try:
+        # TODO: Implement Google OAuth2 callback
+        # This would:
+        # 1. Exchange authorization code for access token
+        # 2. Get user info from Google
+        # 3. Create or update user in database
+        # 4. Return JWT token
+        
+        logger.info(f"Google OAuth2 callback received (not yet implemented): {code}")
+        return {
+            "message": "Google OAuth2 callback not yet implemented",
+            "status": "development"
+        }
+        
+    except Exception as e:
+        logger.error(f"Google callback error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during Google callback"
+        )
 
 
 @router.get("/me", status_code=status.HTTP_200_OK)

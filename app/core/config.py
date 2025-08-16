@@ -2,7 +2,7 @@
 Application configuration settings.
 Uses Pydantic BaseSettings for environment variable management.
 """
-from typing import List
+from typing import List, Optional
 from pydantic import field_validator, ConfigDict
 from pydantic_settings import BaseSettings
 
@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    # OAuth2 settings (for future Google login integration)
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_REDIRECT_URI: Optional[str] = None
     
     # CORS settings
     ALLOWED_HOSTS: List[str] = ["*"]

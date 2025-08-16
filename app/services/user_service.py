@@ -149,7 +149,7 @@ class UserService:
             if not security_manager.verify_password(password, user.password_hash):
                 return None
             
-            if not user.is_authenticated:
+            if not user.is_active:
                 return None
             
             return user
