@@ -14,10 +14,10 @@ from app.services.auth_service import get_current_active_user_dependency, User
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(tags=["users"])
 
 
-@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/create", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_data: UserCreate,
     db: Session = Depends(get_db)
@@ -97,6 +97,12 @@ async def get_current_user_with_blogs(
         user_service = UserService(db)
         return user_service.get_user_with_blogs(current_user.id)
         
+    except NotFoundError as e:
+        logger.warning(f"User blogs not found: {e.detail}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=e.detail
+        )
     except Exception as e:
         logger.error(f"Error fetching user blogs: {e}")
         raise HTTPException(
@@ -220,6 +226,12 @@ async def delete_current_user(
         
         logger.info(f"User {current_user.id} deleted successfully")
         
+    except NotFoundError as e:
+        logger.warning(f"User not found for deletion: {e.detail}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=e.detail
+        )
     except Exception as e:
         logger.error(f"User deletion error: {e}")
         raise HTTPException(

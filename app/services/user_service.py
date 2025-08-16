@@ -51,6 +51,9 @@ class UserService:
             logger.info(f"User created successfully: {db_user.email}")
             return UserResponse.model_validate(db_user)
             
+        except ConflictError:
+            # Re-raise ConflictError without wrapping
+            raise
         except IntegrityError as e:
             self.db.rollback()
             logger.error(f"Database integrity error creating user: {e}")
@@ -69,9 +72,12 @@ class UserService:
             
             return UserResponse.model_validate(user)
             
+        except NotFoundError:
+            # Re-raise NotFoundError without wrapping
+            raise
         except Exception as e:
             logger.error(f"Error fetching user {user_id}: {e}")
-            raise
+            raise DatabaseError("Failed to fetch user")
     
     def get_user_by_email(self, email: str) -> Optional[User]:
         """Get user by email (internal use)."""
@@ -90,9 +96,12 @@ class UserService:
             
             return UserWithBlogs.model_validate(user)
             
+        except NotFoundError:
+            # Re-raise NotFoundError without wrapping
+            raise
         except Exception as e:
             logger.error(f"Error fetching user with blogs {user_id}: {e}")
-            raise
+            raise DatabaseError("Failed to fetch user blogs")
     
     def update_user(self, user_id: int, user_data: UserUpdate) -> UserResponse:
         """Update user information."""
@@ -112,6 +121,9 @@ class UserService:
             logger.info(f"User {user_id} updated successfully")
             return UserResponse.model_validate(user)
             
+        except ConflictError:
+            # Re-raise ConflictError without wrapping
+            raise
         except IntegrityError as e:
             self.db.rollback()
             logger.error(f"Database integrity error updating user {user_id}: {e}")
@@ -134,6 +146,9 @@ class UserService:
             logger.info(f"User {user_id} deleted successfully")
             return True
             
+        except NotFoundError:
+            # Re-raise NotFoundError without wrapping
+            raise
         except Exception as e:
             self.db.rollback()
             logger.error(f"Error deleting user {user_id}: {e}")

@@ -20,7 +20,7 @@ from app.services.auth_service import get_current_active_user_dependency, User
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/blogs", tags=["blogs"])
+router = APIRouter(tags=["blogs"])
 
 
 @router.post("/", response_model=BlogResponse, status_code=status.HTTP_201_CREATED)
