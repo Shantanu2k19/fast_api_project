@@ -1,3 +1,6 @@
+main → The bare-minimum template branch. Use this if you want a clean starting point with only the essentials.
+
+
 # FastAPI Blog API
 
 A scalable, production-ready FastAPI application for blog management with user authentication and authorization.
