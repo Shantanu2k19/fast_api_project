@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Any
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.core.config import settings
 
@@ -19,7 +19,7 @@ class JSONFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         """Format log record as JSON."""
         log_entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),

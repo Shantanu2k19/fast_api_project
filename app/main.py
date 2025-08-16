@@ -1,6 +1,7 @@
 """
 Main FastAPI application entry point.
 """
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -23,14 +24,32 @@ setup_logging(
 
 logger = get_logger(__name__)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for startup and shutdown events."""
+    # Startup
+    try:
+        # Initialize database
+        init_db()
+        logger.info("Application started successfully")
+    except Exception as e:
+        logger.error(f"Failed to start application: {e}")
+        raise
+    
+    yield
+    
+    # Shutdown
+    logger.info("Application shutting down")
+
 # Create FastAPI application
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="A scalable FastAPI blog application with authentication",
+    description="A scalable FastAPI template application with authentication",
     docs_url="/docs",
     redoc_url="/redoc",
-    openapi_url="/openapi.json"
+    openapi_url="/openapi.json",
+    lifespan=lifespan
 )
 
 # Setup middleware
@@ -45,7 +64,7 @@ app.include_router(api_router, prefix="/api/v1")
 async def root():
     """Root endpoint with application information."""
     return {
-        "message": "Welcome to FastAPI Blog API",
+        "message": "Welcome to FastAPI template App!",
         "version": settings.APP_VERSION,
         "docs": "/docs",
         "redoc": "/redoc"
@@ -101,24 +120,6 @@ async def general_exception_handler(request: Request, exc: Exception):
             "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR
         }
     )
-
-# Startup event
-@app.on_event("startup")
-async def startup_event():
-    """Initialize application on startup."""
-    try:
-        # Initialize database
-        init_db()
-        logger.info("Application started successfully")
-    except Exception as e:
-        logger.error(f"Failed to start application: {e}")
-        raise
-
-# Shutdown event
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on application shutdown."""
-    logger.info("Application shutting down")
 
 if __name__ == "__main__":
     import uvicorn

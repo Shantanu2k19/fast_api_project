@@ -120,6 +120,11 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 python -m app.main
 ```
 
+### Using Script
+```bash
+./start.py 
+```
+
 ## API Documentation
 
 Once the application is running, you can access:

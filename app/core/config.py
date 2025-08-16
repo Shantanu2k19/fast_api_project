@@ -16,9 +16,9 @@ class Settings(BaseSettings):
     )
     
     # Application settings
-    APP_NAME: str = "FastAPI Blog API"
+    APP_NAME: str = "FastAPI Template Project"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = False
+    DEBUG: bool = True
     
     # Database settings
     DATABASE_URL: str = "sqlite:///./blog.db"

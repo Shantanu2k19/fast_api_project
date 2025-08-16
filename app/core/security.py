@@ -4,7 +4,7 @@ Handles password hashing, JWT tokens, and security functions.
 """
 from datetime import datetime, timezone, timedelta
 from typing import Optional, Union
-from passlib.context import CryptContext
+from argon2 import PasswordHasher
 from jose import JWTError, jwt
 import logging
 
@@ -12,8 +12,8 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hasher instance
+ph = PasswordHasher()
 
 
 class SecurityManager:
@@ -21,9 +21,9 @@ class SecurityManager:
     
     @staticmethod
     def hash_password(password: str) -> str:
-        """Hash a password using bcrypt."""
+        """Hash a password using argon2."""
         try:
-            return pwd_context.hash(password)
+            return ph.hash(password)
         except Exception as e:
             logger.error(f"Password hashing failed: {e}")
             raise ValueError("Password hashing failed")
@@ -32,7 +32,8 @@ class SecurityManager:
     def verify_password(plain_password: str, hashed_password: str) -> bool:
         """Verify a password against its hash."""
         try:
-            return pwd_context.verify(plain_password, hashed_password)
+            ph.verify(hashed_password, plain_password)
+            return True
         except Exception as e:
             logger.error(f"Password verification failed: {e}")
             return False
@@ -57,7 +58,7 @@ class SecurityManager:
             
             encoded_jwt = jwt.encode(
                 to_encode, 
-                settings.SECRET_KEY.get_secret_value(), 
+                settings.SECRET_KEY, 
                 algorithm=settings.ALGORITHM
             )
             
@@ -73,7 +74,7 @@ class SecurityManager:
         try:
             payload = jwt.decode(
                 token, 
-                settings.SECRET_KEY.get_secret_value(), 
+                settings.SECRET_KEY, 
                 algorithms=[settings.ALGORITHM]
             )
             

@@ -34,6 +34,7 @@ def main():
     # Start the application
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
     
+    logger.info(f"Server running at http://{ '0.0.0.0' if settings.DEBUG else '127.0.0.1' }:8000")
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
